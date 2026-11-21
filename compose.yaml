@@ -8,4 +8,12 @@ services:
       - "5000:5000"
     volumes:
       - ./data:/app/data
+    environment:
+      VERITONE_DB_DIR: /app/data
+      VERITONE_SECRET_KEY: ${VERITONE_SECRET_KEY:-local-compose-only-change-this-secret}
+      VERITONE_COOKIE_SECURE: ${VERITONE_COOKIE_SECURE:-false}
+      VERITONE_ADMIN_USER: ${VERITONE_ADMIN_USER:-admin@gmail.com}
+      VERITONE_ADMIN_PASS: ${VERITONE_ADMIN_PASS:-Strong@Admin@123}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
     restart: unless-stopped

@@ -1,31 +1,30 @@
 const VeriToneAPI = {
-  async runAnalysis(formData) {
-    const res = await fetch("/api/analyze", {
-      method: "POST",
-      body: formData,
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || "Analysis request failed.");
-    }
+  async request(url, options = {}) {
+    const response = await fetch(url, { credentials: "same-origin", ...options });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
     return data;
   },
 
-  async fetchHistory() {
-    const res = await fetch("/api/analyses");
-    if (!res.ok) throw new Error("Failed to fetch history.");
-    return res.json();
+  session() { return this.request("/api/auth/me"); },
+  login(credentials) {
+    return this.request("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(credentials) });
   },
-
-  async fetchAnalysisById(id) {
-    const res = await fetch(`/api/analyses/${id}`);
-    if (!res.ok) throw new Error("Failed to load analysis record.");
-    return res.json();
+  register(credentials) {
+    return this.request("/api/auth/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(credentials) });
   },
-
-  async deleteAnalysisById(id) {
-    const res = await fetch(`/api/analyses/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete analysis record.");
-    return res.json();
+  logout() { return this.request("/api/auth/logout", { method: "POST" }); },
+  runAnalysis(formData) {
+    return this.request("/api/analyze", { method: "POST", body: formData });
   },
+  fetchHistory() { return this.request("/api/analyses"); },
+  fetchAnalysisById(id) { return this.request(`/api/analyses/${id}`); },
+  deleteAnalysisById(id) { return this.request(`/api/analyses/${id}`, { method: "DELETE" }); },
+  adminOverview() { return this.request("/api/admin/overview"); },
+  adminUsers() { return this.request("/api/admin/users"); },
+  adminUpdateUser(id, changes) {
+    return this.request(`/api/admin/users/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(changes) });
+  },
+  adminAnalyses() { return this.request("/api/admin/analyses"); },
+  adminAnalysis(id) { return this.request(`/api/admin/analyses/${id}`); },
 };

@@ -4,152 +4,340 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VeriTone Studio — AI Detection &amp; Prose Humanizer</title>
+    <meta name="theme-color" content="#171a1a" />
+    <title>VeriTone Studio | A clearer view of your prose</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap"
+        rel="stylesheet" />
     <link rel="stylesheet" href="/static/css/styles.css" />
 </head>
 
 <body>
-    <header class="topbar">
-        <div class="brand">
-            <span class="brand-dot"></span>
-            <div>
-                <h1>VeriTone Studio</h1>
-                <p>Unlimited File Ingestion • AI Pattern Scoring • Humanizer • SQLite Archive</p>
-            </div>
-        </div>
-        <nav class="nav-tabs">
-            <button class="tab-btn active" data-tab="studio">Workbench</button>
-            <button class="tab-btn" data-tab="history">Saved Runs (<span id="navCount">0</span>)</button>
-            <button class="tab-btn" data-tab="metrics">Linguistic Metrics</button>
-        </nav>
-    </header>
-
-    <main class="main-shell">
-        <!-- TAB 1: WORKBENCH -->
-        <section id="tab-studio" class="tab-panel active">
-            <div class="workbench-grid">
-                <aside class="panel">
-                    <h2>Input Source</h2>
-                    <form id="analyzeForm" enctype="multipart/form-data">
-                        <label for="fileInput">Upload Document (No Size Limit: .txt, .md, .tex, .pdf)</label>
-                        <input id="fileInput" name="file" type="file" accept=".txt,.md,.tex,.pdf" />
-                        <div id="fileMeta" class="muted-sm">No file selected</div>
-
-                        <label for="rawText" style="margin-top:12px;">Or Paste Text Directly</label>
-                        <textarea id="rawText" name="raw_text" placeholder="Paste draft prose here..."></textarea>
-
-                        <label class="check-row">
-                            <input id="latexMode" name="latex_mode" type="checkbox" value="true" />
-                            <span>Extract prose only (strip LaTeX commands &amp; math)</span>
-                        </label>
-
-                        <button type="submit" id="runBtn" class="primary-btn">Analyze, Humanize &amp; Save</button>
+    <section id="authScreen" class="auth-screen" aria-label="Welcome to VeriTone Studio">
+        <header class="landing-nav">
+            <a class="wordmark" href="/" aria-label="VeriTone Studio home"><span class="mark">V</span><span>VeriTone
+                    <i>Studio</i></span></a>
+            <span class="eyebrow">A WRITING ANALYSIS WORKSPACE</span>
+            <a class="quiet-link" href="#authCard">Your workspace <span aria-hidden="true">↗</span></a>
+        </header>
+        <main class="landing-grid">
+            <section class="landing-copy">
+                <p class="eyebrow accent-eyebrow">INSIGHT BEFORE POLISH</p>
+                <h1>A clearer view<br />of your <em>prose.</em></h1>
+                <p class="landing-intro">See the patterns in a draft. Shape the sentences that need it. Keep every
+                    revision and the reasoning behind it in one private workspace.</p>
+                <div class="landing-actions">
+                    <button class="button button-primary" data-auth-mode="register">Create your account <span
+                            aria-hidden="true">→</span></button>
+                    <button class="button button-text" data-auth-mode="login">Sign in <span
+                            aria-hidden="true">↗</span></button>
+                </div>
+                <div class="privacy-note"><span class="privacy-dot"></span><span>Your runs are private to your account.
+                        Administrators can access platform audit records.</span></div>
+                <div class="landing-flow" aria-label="Workflow preview">
+                    <div class="flow-step"><span class="step-number">01</span><span>Bring a draft</span></div>
+                    <span class="flow-rule"></span>
+                    <div class="flow-step"><span class="step-number">02</span><span>Read the signals</span></div>
+                    <span class="flow-rule"></span>
+                    <div class="flow-step"><span class="step-number">03</span><span>Revise with intent</span></div>
+                </div>
+            </section>
+            <aside class="auth-aside">
+                <div class="preview-head"><span class="eyebrow">A NOTE ON THE PAGE</span><span class="live-mark">●
+                        SAMPLE</span></div>
+                <blockquote>“The results underscore the importance of a careful review. Moreover, a wide range of
+                    factors can shape the outcome.”</blockquote>
+                <div class="preview-divider"></div>
+                <div class="preview-label"><span class="signal-mark">↘</span><span>FORMULAIC TRANSITIONS</span><span
+                        class="signal-count">02</span></div>
+                <div class="preview-label"><span class="signal-mark muted-signal">⌁</span><span>LOW SENTENCE
+                        VARIATION</span><span class="signal-count">01</span></div>
+                <div class="preview-foot"><span>LINGUISTIC SIGNALS, NOT PROOF OF AUTHORSHIP</span><span>01 / 03</span>
+                </div>
+                <div class="auth-card" id="authCard">
+                    <div class="auth-switch" role="tablist" aria-label="Account action">
+                        <button class="auth-switch-btn active" type="button" data-auth-mode="login">Sign in</button>
+                        <button class="auth-switch-btn" type="button" data-auth-mode="register">Create account</button>
+                    </div>
+                    <form id="authForm">
+                        <label for="authUsername">Username</label>
+                        <input id="authUsername" name="username" autocomplete="username" minlength="3" maxlength="32"
+                            required />
+                        <label for="authPassword">Password</label>
+                        <input id="authPassword" name="password" type="password" autocomplete="current-password"
+                            minlength="10" required />
+                        <p id="passwordHint" class="field-hint" hidden>Use at least 10 characters.</p>
+                        <button id="authSubmit" class="button button-primary auth-submit" type="submit">Sign in <span
+                                aria-hidden="true">→</span></button>
+                        <p id="authStatus" class="form-status" role="status"></p>
                     </form>
-                    <div id="statusBox" class="status-box">Ready.</div>
-                </aside>
+                    <p class="security-caption">Sessions use HttpOnly cookies. Passwords are securely hashed.</p>
+                </div>
+            </aside>
+        </main>
+        <footer class="landing-footer"><span>VERITONE STUDIO</span><span>PRIVATE BY DEFAULT · DESIGNED FOR CAREFUL
+                REVISION</span><span>EST. 2025</span></footer>
+    </section>
 
-                <div class="results-col">
-                    <div class="panel">
-                        <div class="panel-head">
-                            <h2 id="activeTitle">Active Run Summary</h2>
-                            <div id="exportBar" class="export-bar"></div>
-                        </div>
+    <div id="studioApp" class="studio-app" hidden>
+        <header class="studio-header">
+            <a class="wordmark studio-wordmark" href="#" data-tab="studio"><span class="mark">V</span><span>VeriTone
+                    <i>Studio</i></span></a>
+            <nav class="main-nav" aria-label="Workspace">
+                <button class="nav-item active" data-tab="studio">Workbench</button>
+                <button class="nav-item" data-tab="history">My history <span class="nav-count"
+                        id="navCount">0</span></button>
+                <button class="nav-item" data-tab="metrics">Metrics</button>
+                <button class="nav-item" data-tab="explore">Explore</button>
+                <button class="nav-item" id="adminNav" data-tab="admin" hidden>Administration</button>
+            </nav>
+            <div class="account-tools"><span id="accountName" class="account-name"></span><span id="accountRole"
+                    class="role-label"></span><button id="logoutBtn" class="button button-small button-outline">Sign
+                    out</button></div>
+        </header>
 
-                        <div class="kpi-grid">
-                            <div class="kpi-card">
-                                <span>AI Score (Before → After)</span>
-                                <strong id="kpiScore">—</strong>
-                            </div>
-                            <div class="kpi-card">
-                                <span>Total Edits</span>
-                                <strong id="kpiChanges">—</strong>
-                            </div>
-                            <div class="kpi-card">
-                                <span>Changed %</span>
-                                <strong id="kpiPct">—</strong>
-                            </div>
-                            <div class="kpi-card">
-                                <span>Total Words</span>
-                                <strong id="kpiWords">—</strong>
-                            </div>
-                        </div>
-
-                        <div class="split-editors">
-                            <div>
-                                <div class="sub-label">Source / Extracted Text</div>
-                                <pre id="sourcePreview" class="code-box">Run an analysis or select a saved entry.</pre>
-                            </div>
-                            <div>
-                                <div class="sub-label">Humanized Output</div>
-                                <pre id="humanizedPreview" class="code-box">Humanized output will appear here.</pre>
-                            </div>
-                        </div>
+        <main class="workspace-shell">
+            <section id="tab-studio" class="view-panel active">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow accent-eyebrow">YOUR WORKSPACE / <span id="runCountLabel">READY</span></p>
+                        <h1>Workbench</h1>
+                        <p class="page-deck">A close reading of the patterns in your draft.</p>
                     </div>
+                    <div class="heading-note"><span class="live-mark">●</span> PRIVATE SESSION</div>
+                </div>
+                <div class="workbench-layout">
+                    <aside class="input-column">
+                        <form id="analyzeForm" class="source-form" enctype="multipart/form-data">
+                            <div class="section-heading"><span class="section-index">01</span>
+                                <h2>Bring your draft</h2>
+                            </div>
+                            <label class="dropzone" id="dropzone" for="fileInput"><span
+                                    class="drop-icon">＋</span><strong>Drop a file, or browse</strong><span>TXT · MD ·
+                                    TEX · PDF · NO SIZE CAP</span><input id="fileInput" name="file" type="file"
+                                    accept=".txt,.md,.tex,.pdf" /></label>
+                            <p id="fileMeta" class="file-meta">No file selected</p>
+                            <div class="text-divider"><span>OR PASTE TEXT</span></div>
+                            <label class="sr-only" for="rawText">Draft text</label>
+                            <textarea id="rawText" name="raw_text" placeholder="Paste or write your draft here..."
+                                rows="9"></textarea>
+                            <div class="toggle-row">
+                                <div><strong>LaTeX prose extraction</strong><span>Skip markup, comments, lists, and
+                                        equations</span></div><label class="switch"><input id="latexMode"
+                                        name="latex_mode" type="checkbox" value="true" /><span
+                                        class="switch-track"></span></label>
+                            </div>
+                            <div class="toggle-row">
+                                <div><strong>Heuristic-only mode</strong><span>Keep all processing local; no Gemini
+                                        calls</span></div><label class="switch"><input id="heuristicOnly"
+                                        name="heuristic_only" type="checkbox" value="true" /><span
+                                        class="switch-track"></span></label>
+                            </div>
+                            <button id="runBtn" class="button button-primary run-button" type="submit">Analyze draft
+                                <span aria-hidden="true">→</span></button>
+                            <p id="statusBox" class="status-line" role="status">Ready when you are.</p>
+                        </form>
+                    </aside>
 
-                    <div class="panel">
-                        <h2>Full Change &amp; Edit Report</h2>
-                        <div id="changeSummaryLine" class="muted-sm" style="margin-bottom:10px;">No edits recorded yet.
-                        </div>
-                        <div class="table-wrap">
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Sent.</th>
-                                        <th>Edit Type</th>
-                                        <th>Before</th>
-                                        <th>After</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="changesTableBody">
-                                    <tr>
-                                        <td colspan="5" class="muted-sm">No edits to display.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="results-column">
+                        <section class="result-section">
+                            <div class="result-topline">
+                                <div>
+                                    <p class="eyebrow">LATEST ANALYSIS</p>
+                                    <h2 id="activeTitle">Your results will appear here</h2>
+                                </div>
+                                <div id="exportBar" class="export-bar"></div>
+                            </div>
+                            <div class="kpi-row">
+                                <div class="kpi"><span>Pattern score</span><strong id="kpiScore">—</strong><small>BEFORE
+                                        → AFTER</small></div>
+                                <div class="kpi"><span>Edits made</span><strong
+                                        id="kpiChanges">—</strong><small>RECORDED CHANGES</small></div>
+                                <div class="kpi"><span>Words affected</span><strong
+                                        id="kpiPct">—</strong><small>ESTIMATED SHARE</small></div>
+                                <div class="kpi"><span>Draft length</span><strong id="kpiWords">—</strong><small>WORDS
+                                        ANALYZED</small></div>
+                            </div>
+                            <div class="editor-grid">
+                                <div class="editor-pane">
+                                    <div class="editor-title"><span>01 / SOURCE</span><span id="sourceScore"
+                                            class="score-label">— / 100</span></div>
+                                    <pre id="sourcePreview"
+                                        class="text-preview">Start with a pasted draft or upload a document.</pre>
+                                </div>
+                                <div class="editor-pane output-pane">
+                                    <div class="editor-title"><span>02 / HUMANIZED</span><span id="outputScore"
+                                            class="score-label">— / 100</span></div>
+                                    <pre id="humanizedPreview"
+                                        class="text-preview">Your revised prose will appear here.</pre>
+                                </div>
+                            </div>
+                            <p id="engineNote" class="engine-note"></p>
+                        </section>
+                        <section class="report-section">
+                            <div class="section-heading"><span class="section-index">02</span>
+                                <div>
+                                    <h2>Revision log</h2>
+                                    <p id="changeSummaryLine" class="section-subtitle">Edits will be listed with their
+                                        source sentence.</p>
+                                </div>
+                            </div>
+                            <div class="table-scroll">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Sentence</th>
+                                            <th>Change</th>
+                                            <th>Before</th>
+                                            <th>After</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="changesTableBody">
+                                        <tr>
+                                            <td colspan="5" class="empty-cell">No edits to display.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- TAB 2: SAVED RUNS -->
-        <section id="tab-history" class="tab-panel">
-            <div class="panel">
-                <div class="panel-head">
-                    <h2>Server Database History</h2>
-                    <button id="refreshHistoryBtn" class="secondary-btn">Refresh</button>
+            <section id="tab-history" class="view-panel">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow accent-eyebrow">YOUR ARCHIVE</p>
+                        <h1>My history</h1>
+                        <p class="page-deck">Past analyses, kept private to your account.</p>
+                    </div><button id="refreshHistoryBtn" class="button button-outline">Refresh history <span
+                            aria-hidden="true">↻</span></button>
                 </div>
-                <div class="table-wrap">
+                <div class="table-scroll archive-table">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Timestamp (UTC)</th>
+                                <th>Run</th>
+                                <th>Date</th>
                                 <th>Source</th>
                                 <th>Words</th>
-                                <th>AI Score</th>
-                                <th>Changes</th>
+                                <th>Score</th>
+                                <th>Edits</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="historyTableBody"></tbody>
                     </table>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- TAB 3: METRICS -->
-        <section id="tab-metrics" class="tab-panel">
-            <div class="panel">
-                <h2>Before vs. After Linguistic &amp; Cliché Diagnostics</h2>
-                <div class="metrics-grid" id="metricsCards">
-                    <p class="muted-sm">Run an analysis to inspect burstiness, sentence length, and cliché hits.</p>
+            <section id="tab-metrics" class="view-panel">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow accent-eyebrow">READING THE SIGNALS</p>
+                        <h1>Linguistic metrics</h1>
+                        <p class="page-deck">Before and after diagnostics for the active run.</p>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </main>
+                <div id="metricsCards" class="metrics-grid">
+                    <p class="empty-state">Run an analysis to see sentence rhythm, lexical variety, and cliché
+                        diagnostics.</p>
+                </div>
+            </section>
 
+            <section id="tab-explore" class="view-panel">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow accent-eyebrow">THE VERITONE APPROACH</p>
+                        <h1>Explore the studio</h1>
+                        <p class="page-deck">A transparent workflow for understanding and refining prose.</p>
+                    </div><button class="button button-primary" data-tab="studio">Open workbench <span
+                            aria-hidden="true">→</span></button>
+                </div>
+                <div class="explore-grid">
+                    <article><span class="section-index">01</span>
+                        <h2>Read patterns in context</h2>
+                        <p>Sentence rhythm, lexical variety, transition clichés, and contextual model analysis offer
+                            signals to examine, not proof of authorship.</p>
+                    </article>
+                    <article><span class="section-index">02</span>
+                        <h2>Keep every revision visible</h2>
+                        <p>Compare the source and revised text side by side. Each recorded change includes a sentence
+                            reference and before-and-after detail.</p>
+                    </article>
+                    <article><span class="section-index">03</span>
+                        <h2>Your work stays yours</h2>
+                        <p>Analysis history is scoped to your account. Platform-wide records are available only to
+                            administrators for operational review.</p>
+                    </article>
+                </div>
+            </section>
+
+            <section id="tab-admin" class="view-panel">
+                <div class="page-heading">
+                    <div>
+                        <p class="eyebrow accent-eyebrow">PLATFORM CONTROL</p>
+                        <h1>Administration</h1>
+                        <p class="page-deck">System health, access management, and platform audit.</p>
+                    </div><span class="role-label admin-label">ADMIN</span>
+                </div>
+                <div id="adminKpis" class="admin-kpis"></div>
+                <section class="admin-section">
+                    <div class="section-heading"><span class="section-index">01</span>
+                        <div>
+                            <h2>User management</h2>
+                            <p class="section-subtitle">Manage platform roles and account access.</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Created</th>
+                                    <th>Runs</th>
+                                    <th>Words</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+                <section class="admin-section">
+                    <div class="section-heading"><span class="section-index">02</span>
+                        <div>
+                            <h2>Platform audit</h2>
+                            <p class="section-subtitle">Recent analysis activity across accounts.</p>
+                        </div>
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Run</th>
+                                    <th>Date</th>
+                                    <th>Account</th>
+                                    <th>Source</th>
+                                    <th>Words</th>
+                                    <th>Score shift</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </main>
+        <footer class="studio-footer"><span>VERITONE STUDIO</span><span id="footerMode">HEURISTIC ANALYSIS
+                AVAILABLE</span><span>PRIVATE WORKSPACE</span></footer>
+    </div>
     <script src="/static/js/api.js"></script>
     <script src="/static/js/app.js"></script>
 </body>

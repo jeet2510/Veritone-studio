@@ -15,28 +15,70 @@
 
 ---
 
-## Project Structure
+# VeriTone Studio
+
+VeriTone Studio is a private writing-analysis workspace with a Flask API, a responsive HTML/CSS/JavaScript client, and SQLite persistence. It combines local linguistic heuristics with optional Google Gemini scoring and prose revision.
+
+## Capabilities
+
+- Account registration and session-based sign-in with Werkzeug password hashing, HttpOnly cookies, `user`/`admin` roles, and an environment-seeded administrator.
+- Owner-scoped analysis history, deletion, and downloads. Requests for another account's existing analysis return `403`; missing records return `404`. Administrators can inspect platform audit records and manage account roles/status.
+- Heuristic scoring for sentence-length variation, lexical diversity, formulaic phrases, and flagged sentences. When configured, Gemini adds contextual scoring and prose revision. Heuristic-only mode is available per run and the app works without an API key.
+- TXT, Markdown, TeX, and PDF ingestion. Upload streams are copied in chunks to temporary disk files; Flask's `MAX_CONTENT_LENGTH` is unset. LaTeX extraction removes the preamble, comments, and common code, list, table, and math environments.
+- Side-by-side source/output, linguistic metrics, sentence-level edit audit, estimated word impact, SQLite history, `.txt` output, and `.json` report exports.
+
+Scores are heuristic estimates of writing patterns, not evidence that a person or model authored a text. When Gemini is enabled, submitted draft text is sent to Google's Gemini API; use heuristic-only mode for local processing.
+
+## Run With Docker Compose
+
+1. For local use, Compose seeds `admin@gmail.com` with the configured default password. For any shared or public deployment, copy `.env.example` to `.env` and replace both `VERITONE_SECRET_KEY` and `VERITONE_ADMIN_PASS` with private values before starting. Set `GEMINI_API_KEY` if Gemini is desired. Keep `.env` private; it is ignored by Git and excluded from the Docker build context.
+2. From this directory, build and start the app:
+
+   ```sh
+   docker compose up --build
+   ```
+
+3. Open <http://localhost:5000>. The SQLite database is persisted at `./data/veritone.db` through the Compose volume.
+4. To stop the service, run `docker compose down`. The `data/` directory remains on the host.
+
+For HTTPS deployments, set `VERITONE_COOKIE_SECURE=true` and terminate TLS at a trusted reverse proxy. Configure a strong secret key and administrator password before exposing the service publicly.
+
+## Run Locally
+
+Requires Python 3.11 or newer.
+
+```sh
+cp .env.example .env
+# Edit .env: set VERITONE_SECRET_KEY and VERITONE_ADMIN_PASS; GEMINI_API_KEY is optional.
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+set -a
+source .env
+set +a
+flask --app 'backend:create_app()' run --debug --host 127.0.0.1
+```
+
+Open <http://127.0.0.1:5000>. Local data is stored in `data/veritone.db`. Without a Gemini key, scoring and humanization use the offline heuristic implementation; the workbench also offers a per-run heuristic-only toggle.
+
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `VERITONE_SECRET_KEY` | Flask session signing key. Set a long, unique value. |
+| `VERITONE_ADMIN_USER` | Username to create as the initial administrator (Compose default: `admin@gmail.com`). |
+| `VERITONE_ADMIN_PASS` | Initial administrator password (Compose local default is configured in `compose.yaml`). Admin creation is skipped if empty. |
+| `GEMINI_API_KEY` | Optional Google Gemini API key. |
+| `GEMINI_MODEL` | Gemini model name (default: `gemini-2.0-flash`). |
+| `VERITONE_DB_DIR` | SQLite data directory (default: project `data/`; Compose uses `/app/data`). |
+| `VERITONE_COOKIE_SECURE` | Set to `true` when serving over HTTPS. |
+
+## Project Layout
 
 ```text
-veritone_studio/
-├── .dockerignore
-├── .gitignore
-├── Dockerfile
-├── compose.yaml
-├── requirements.txt
-├── README.md
-├── backend/
-│   ├── __init__.py
-│   ├── config.py          # App config, DB path, unlimited upload setting
-│   ├── database.py        # SQLite schema and CRUD helpers
-│   ├── detector.py        # Burstiness, lexical diversity & AI cliché detector
-│   ├── humanizer.py       # Humanizer engine, change tracker & % calculator
-│   ├── extractor.py       # Plain text, PDF (pypdf) & LaTeX (.tex) extractor
-│   └── routes.py          # REST API endpoints (/api/*) & file downloads
-└── frontend/
-    ├── index.html         # Multi-tab web dashboard
-    ├── css/
-    │   └── styles.css     # Dashboard layout and styling
-    └── js/
-        ├── api.js         # Backend API client
-        └── app.js         # UI state, tables, metrics & history management
+backend/       Flask app factory, auth, SQLite, detector, humanizer, extraction, API routes
+frontend/      Landing/auth flow and responsive user/admin studio
+data/          SQLite database (created at runtime; not tracked)
+Dockerfile     Python/Gunicorn image
+compose.yaml   App service, configuration, and persistent database volume
+```

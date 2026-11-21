@@ -8,7 +8,11 @@ def extract_latex_prose(tex_source: str) -> str:
     body_match = re.search(r"\\begin\{document\}(.*?)\\end\{document\}", tex_source, flags=re.DOTALL)
     text = body_match.group(1) if body_match else tex_source
 
-    for env in ["lstlisting", "verbatim", "equation", "align", "tabular", "tabularx", "tikzpicture"]:
+    for env in [
+        "lstlisting", "verbatim", "minted", "comment", "equation", "align", "gather",
+        "multline", "displaymath", "math", "tabular", "tabularx", "table", "tikzpicture",
+        "itemize", "enumerate", "description",
+    ]:
         text = re.sub(rf"\\begin\{{{env}\*?\}}.*?\\end\{{{env}\*?\}}", "\n\n", text, flags=re.DOTALL)
 
     text = re.sub(r"(?<!\\)%[^\n]*", "", text)

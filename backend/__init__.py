@@ -1,6 +1,7 @@
 from flask import Flask
 from pathlib import Path
 
+from .auth import auth_bp
 from .config import Config
 from .database import init_db
 from .routes import api_bp, page_bp
@@ -19,6 +20,7 @@ def create_app() -> Flask:
     init_db()
 
     app.register_blueprint(page_bp)
+    app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp, url_prefix="/api")
 
     return app

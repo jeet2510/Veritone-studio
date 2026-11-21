@@ -1,3 +1,4 @@
+import difflib
 import re
 from dataclasses import dataclass, field
 from typing import Dict, List
@@ -137,7 +138,14 @@ def humanize_sentence(
     return updated.strip()
 
 
-def humanize_text_with_report(text: str) -> HumanizeResult:
+def humanize_text_with_report(
+    text: str, api_key: str = "", model: str = "gemini-2.0-flash"
+) -> HumanizeResult:
+    if api_key:
+        model_result = _humanize_with_gemini(text, api_key, model)
+        if model_result is not None:
+            return model_result
+
     paragraphs = [p.strip() for p in text.strip().split("\n\n") if p.strip()]
     output_paragraphs: List[str] = []
     changes: List[ChangeRecord] = []
@@ -175,5 +183,60 @@ def humanize_text_with_report(text: str) -> HumanizeResult:
         change_percentage=change_percentage,
         changed_sentences=changed_sentence_count,
         total_sentences=sentence_counter,
+        changes=changes,
+    )
+
+
+def _humanize_with_gemini(text: str, api_key: str, model: str) -> HumanizeResult | None:
+    try:
+        from google import genai
+
+        client = genai.Client(api_key=api_key)
+        response = client.models.generate_content(
+            model=model,
+            contents=(
+                "Edit the prose below to sound clear, specific, and naturally varied while "
+                "preserving every claim, qualification, citation, technical term, number, "
+                "LaTeX command, and equation exactly in meaning. Do not invent details or "
+                "add a preface. Return only the revised text.\n\nTEXT:\n" + text
+            ),
+            config={"temperature": 0.35},
+        )
+        rewritten = (response.text or "").strip()
+        rewritten = re.sub(r"\A```(?:text|markdown)?\s*|\s*```\Z", "", rewritten).strip()
+        if not rewritten:
+            return None
+    except Exception:
+        return None
+
+    original_sentences = [s for s in re.split(r"(?<=[.!?])\s+", text.strip()) if s]
+    rewritten_sentences = [s for s in re.split(r"(?<=[.!?])\s+", rewritten) if s]
+    changes: List[ChangeRecord] = []
+    changed_sentences = 0
+    modified_words = 0
+    matcher = difflib.SequenceMatcher(a=original_sentences, b=rewritten_sentences, autojunk=False)
+    for tag, start, end, new_start, new_end in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        before = " ".join(original_sentences[start:end])
+        after = " ".join(rewritten_sentences[new_start:new_end])
+        changes.append(
+            ChangeRecord(
+                change_type="gemini_rewrite",
+                before=before,
+                after=after or "(removed)",
+                sentence_index=start + 1,
+            )
+        )
+        changed_sentences += max(end - start, 1)
+        modified_words += len(re.findall(r"[A-Za-z0-9']+", before))
+
+    word_count = max(_count_words(text), 1)
+    return HumanizeResult(
+        text=rewritten,
+        total_changes=len(changes),
+        change_percentage=round(min(modified_words, word_count) / word_count * 100, 1),
+        changed_sentences=min(changed_sentences, len(original_sentences)),
+        total_sentences=len(original_sentences),
         changes=changes,
     )
