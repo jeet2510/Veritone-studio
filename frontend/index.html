@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VeriTone Studio — AI Detection &amp; Prose Humanizer</title>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-dot"></span>
+            <div>
+                <h1>VeriTone Studio</h1>
+                <p>Unlimited File Ingestion • AI Pattern Scoring • Humanizer • SQLite Archive</p>
+            </div>
+        </div>
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="studio">Workbench</button>
+            <button class="tab-btn" data-tab="history">Saved Runs (<span id="navCount">0</span>)</button>
+            <button class="tab-btn" data-tab="metrics">Linguistic Metrics</button>
+        </nav>
+    </header>
+
+    <main class="main-shell">
+        <!-- TAB 1: WORKBENCH -->
+        <section id="tab-studio" class="tab-panel active">
+            <div class="workbench-grid">
+                <aside class="panel">
+                    <h2>Input Source</h2>
+                    <form id="analyzeForm" enctype="multipart/form-data">
+                        <label for="fileInput">Upload Document (No Size Limit: .txt, .md, .tex, .pdf)</label>
+                        <input id="fileInput" name="file" type="file" accept=".txt,.md,.tex,.pdf" />
+                        <div id="fileMeta" class="muted-sm">No file selected</div>
+
+                        <label for="rawText" style="margin-top:12px;">Or Paste Text Directly</label>
+                        <textarea id="rawText" name="raw_text" placeholder="Paste draft prose here..."></textarea>
+
+                        <label class="check-row">
+                            <input id="latexMode" name="latex_mode" type="checkbox" value="true" />
+                            <span>Extract prose only (strip LaTeX commands &amp; math)</span>
+                        </label>
+
+                        <button type="submit" id="runBtn" class="primary-btn">Analyze, Humanize &amp; Save</button>
+                    </form>
+                    <div id="statusBox" class="status-box">Ready.</div>
+                </aside>
+
+                <div class="results-col">
+                    <div class="panel">
+                        <div class="panel-head">
+                            <h2 id="activeTitle">Active Run Summary</h2>
+                            <div id="exportBar" class="export-bar"></div>
+                        </div>
+
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <span>AI Score (Before → After)</span>
+                                <strong id="kpiScore">—</strong>
+                            </div>
+                            <div class="kpi-card">
+                                <span>Total Edits</span>
+                                <strong id="kpiChanges">—</strong>
+                            </div>
+                            <div class="kpi-card">
+                                <span>Changed %</span>
+                                <strong id="kpiPct">—</strong>
+                            </div>
+                            <div class="kpi-card">
+                                <span>Total Words</span>
+                                <strong id="kpiWords">—</strong>
+                            </div>
+                        </div>
+
+                        <div class="split-editors">
+                            <div>
+                                <div class="sub-label">Source / Extracted Text</div>
+                                <pre id="sourcePreview" class="code-box">Run an analysis or select a saved entry.</pre>
+                            </div>
+                            <div>
+                                <div class="sub-label">Humanized Output</div>
+                                <pre id="humanizedPreview" class="code-box">Humanized output will appear here.</pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <h2>Full Change &amp; Edit Report</h2>
+                        <div id="changeSummaryLine" class="muted-sm" style="margin-bottom:10px;">No edits recorded yet.
+                        </div>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Sent.</th>
+                                        <th>Edit Type</th>
+                                        <th>Before</th>
+                                        <th>After</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="changesTableBody">
+                                    <tr>
+                                        <td colspan="5" class="muted-sm">No edits to display.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: SAVED RUNS -->
+        <section id="tab-history" class="tab-panel">
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Server Database History</h2>
+                    <button id="refreshHistoryBtn" class="secondary-btn">Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Timestamp (UTC)</th>
+                                <th>Source</th>
+                                <th>Words</th>
+                                <th>AI Score</th>
+                                <th>Changes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: METRICS -->
+        <section id="tab-metrics" class="tab-panel">
+            <div class="panel">
+                <h2>Before vs. After Linguistic &amp; Cliché Diagnostics</h2>
+                <div class="metrics-grid" id="metricsCards">
+                    <p class="muted-sm">Run an analysis to inspect burstiness, sentence length, and cliché hits.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
